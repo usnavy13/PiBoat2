@@ -1,0 +1,6 @@
+python-dotenv
+pyserial
+pynmea2
+smbus2
+rpi-hardware-pwm
+requests
