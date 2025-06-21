@@ -11,10 +11,10 @@ logger = logging.getLogger("MotorController")
 # For Raspberry Pi 1/2/3/4, use CHIP = 0
 # For Raspberry Pi 5, use CHIP = 0 for GPIO_12 and GPIO_13
 #              or use CHIP = 2 for GPIO_18 and GPIO_19
-CHIP = 2  # Using CHIP = 2 for Raspberry Pi 5 with GPIO_18 and GPIO_19
+CHIP = 0  # Using CHIP = 0 for Raspberry Pi 5 with GPIO_18 and GPIO_19
 
 # Define PWM channels
-# For Pi 5 with CHIP=2: Channel 2 = GPIO_18, Channel 3 = GPIO_19
+# For Pi 5 with CHIP=0: Channel 2 = GPIO_18, Channel 3 = GPIO_19
 RUDDER_CHANNEL = 3 
 THRUST_CHANNEL = 2    
 
