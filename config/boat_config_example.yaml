@@ -1,0 +1,45 @@
+# PiBoat2 Configuration Example
+# Copy this to boat_config.yaml and modify for your setup
+
+boat_id: "piboat2_test_001"
+
+mqtt:
+  broker_host: "localhost"  # Change to your MQTT broker
+  port: 1883
+  use_tls: false
+  username: null  # Set if your broker requires authentication
+  password: null
+  keepalive: 60
+  qos: 1
+  reconnect_delay_min: 1
+  reconnect_delay_max: 60
+
+safety:
+  max_speed_percent: 70
+  max_rudder_angle: 45.0
+  max_distance_from_start: 1000.0  # meters
+  battery_voltage_min: 11.0
+  temperature_max: 85.0  # Celsius
+  gps_timeout_seconds: 30
+  command_timeout_seconds: 60
+
+navigation:
+  update_interval: 1.0
+  heading_tolerance: 5.0
+  max_turn_rate: 30.0
+  position_tolerance: 5.0
+  pid_kp: 1.0
+  pid_ki: 0.1
+  pid_kd: 0.5
+
+reporting:
+  status_interval: 10
+  gps_interval: 5
+  heartbeat_interval: 30
+  system_metrics_interval: 60
+
+hardware:
+  gps_device: "/dev/ttyUSB0"
+  gps_baudrate: 9600
+  compass_i2c_address: 0x1e
+  motor_controller_device: "/dev/ttyUSB1"

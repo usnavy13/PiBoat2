@@ -1,1 +1,29 @@
+# Virtual environments
 .venv/
+venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Log files
+*.log
+logs/
+*.log.*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Configuration files with sensitive data
+*_secret.yaml
+*_private.yaml
+*.env
