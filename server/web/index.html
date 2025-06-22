@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiBoat2 Ground Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online { background: #4CAF50; }
+        .status-offline { background: #f44336; }
+        .status-unknown { background: #9E9E9E; }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .btn-emergency {
+            background: #f44336;
+        }
+        
+        .btn-emergency:hover {
+            background: #d32f2f;
+        }
+        
+        .boat-list {
+            list-style: none;
+        }
+        
+        .boat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: box-shadow 0.3s;
+        }
+        
+        .boat-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .boat-info h3 {
+            margin-bottom: 5px;
+        }
+        
+        .boat-info p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .boat-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .system-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        #map {
+            height: 400px;
+            border-radius: 8px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚤 PiBoat2 Ground Control</h1>
+            <p>Real-time boat monitoring and control system</p>
+        </div>
+        
+        <div id="error-container"></div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>System Status</h2>
+                <div id="system-status" class="loading">Loading system status...</div>
+            </div>
+            
+            <div class="card">
+                <h2>Quick Actions</h2>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn" onclick="refreshData()">🔄 Refresh Data</button>
+                    <button class="btn" onclick="viewLogs()">📋 View Logs</button>
+                    <button class="btn btn-emergency" onclick="emergencyStopAll()">🛑 Emergency Stop All</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Registered Boats</h2>
+            <div id="boats-container" class="loading">Loading boats...</div>
+        </div>
+        
+        <div class="card">
+            <h2>Boat Locations</h2>
+            <div id="map">
+                Map view - Integration with mapping service would go here
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API base URL
+        const API_BASE = '/api/v1';
+        
+        // Global data
+        let boats = [];
+        let systemStatus = {};
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(loadData, 30000);
+        });
+        
+        // Load all data
+        async function loadData() {
+            try {
+                await Promise.all([
+                    loadSystemStatus(),
+                    loadBoats()
+                ]);
+                clearError();
+            } catch (error) {
+                showError('Failed to load data: ' + error.message);
+            }
+        }
+        
+        // Load system status
+        async function loadSystemStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/system/status`);
+                if (!response.ok) throw new Error('Failed to fetch system status');
+                
+                systemStatus = await response.json();
+                renderSystemStatus();
+            } catch (error) {
+                console.error('Error loading system status:', error);
+                throw error;
+            }
+        }
+        
+        // Load boats
+        async function loadBoats() {
+            try {
+                const response = await fetch(`${API_BASE}/boats`);
+                if (!response.ok) throw new Error('Failed to fetch boats');
+                
+                boats = await response.json();
+                renderBoats();
+            } catch (error) {
+                console.error('Error loading boats:', error);
+                throw error;
+            }
+        }
+        
+        // Render system status
+        function renderSystemStatus() {
+            const container = document.getElementById('system-status');
+            const { system, boats: boatStats, commands } = systemStatus;
+            
+            container.innerHTML = `
+                <div class="system-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">${boatStats.total}</div>
+                        <div class="stat-label">Total Boats</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${boatStats.online}</div>
+                        <div class="stat-label">Online</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${commands.pending}</div>
+                        <div class="stat-label">Pending Commands</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            <span class="status-indicator ${system.database_connected ? 'status-online' : 'status-offline'}"></span>
+                            DB
+                        </div>
+                        <div class="stat-label">Database</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            <span class="status-indicator ${system.mqtt_connected ? 'status-online' : 'status-offline'}"></span>
+                            MQTT
+                        </div>
+                        <div class="stat-label">Communication</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Render boats
+        function renderBoats() {
+            const container = document.getElementById('boats-container');
+            
+            if (boats.length === 0) {
+                container.innerHTML = '<p>No boats registered</p>';
+                return;
+            }
+            
+            const boatList = boats.map(boat => {
+                const statusClass = boat.status === 'online' ? 'status-online' : 
+                                  boat.status === 'offline' ? 'status-offline' : 'status-unknown';
+                
+                return `
+                    <div class="boat-item">
+                        <div class="boat-info">
+                            <h3>
+                                <span class="status-indicator ${statusClass}"></span>
+                                ${boat.name}
+                            </h3>
+                            <p>ID: ${boat.boat_id} | Status: ${boat.status}</p>
+                            <p>Last seen: ${boat.last_seen ? new Date(boat.last_seen).toLocaleString() : 'Never'}</p>
+                            ${boat.last_gps_lat && boat.last_gps_lon ? 
+                                `<p>Position: ${boat.last_gps_lat.toFixed(6)}, ${boat.last_gps_lon.toFixed(6)}</p>` : 
+                                '<p>Position: Unknown</p>'
+                            }
+                        </div>
+                        <div class="boat-actions">
+                            <button class="btn" onclick="viewBoat('${boat.boat_id}')">📊 Details</button>
+                            <button class="btn" onclick="sendCommand('${boat.boat_id}')">🎮 Control</button>
+                            <button class="btn btn-emergency" onclick="emergencyStop('${boat.boat_id}')">🛑 Stop</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = `<ul class="boat-list">${boatList}</ul>`;
+        }
+        
+        // Boat actions
+        function viewBoat(boatId) {
+            window.open(`/api/v1/boats/${boatId}/status`, '_blank');
+        }
+        
+        function sendCommand(boatId) {
+            const command = prompt('Enter command type (navigation, control, status):');
+            if (!command) return;
+            
+            const payload = prompt('Enter command payload (JSON):');
+            if (!payload) return;
+            
+            try {
+                const parsedPayload = JSON.parse(payload);
+                sendCommandToBoat(boatId, command, parsedPayload);
+            } catch (error) {
+                alert('Invalid JSON payload');
+            }
+        }
+        
+        async function sendCommandToBoat(boatId, commandType, payload) {
+            try {
+                const response = await fetch(`${API_BASE}/boats/${boatId}/command`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        command_type: commandType,
+                        payload: payload
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to send command');
+                }
+                
+                const result = await response.json();
+                alert(`Command sent successfully! Command ID: ${result.command_id}`);
+                
+            } catch (error) {
+                alert('Error sending command: ' + error.message);
+            }
+        }
+        
+        async function emergencyStop(boatId) {
+            if (!confirm(`Are you sure you want to emergency stop boat ${boatId}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/boats/${boatId}/emergency_stop`, {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to send emergency stop');
+                }
+                
+                const result = await response.json();
+                alert(`Emergency stop sent! Command ID: ${result.command_id}`);
+                
+            } catch (error) {
+                alert('Error sending emergency stop: ' + error.message);
+            }
+        }
+        
+        // Utility functions
+        function refreshData() {
+            loadData();
+        }
+        
+        function viewLogs() {
+            if (boats.length > 0) {
+                const boatId = boats[0].boat_id;
+                window.open(`/api/v1/boats/${boatId}/logs`, '_blank');
+            } else {
+                alert('No boats available');
+            }
+        }
+        
+        function emergencyStopAll() {
+            if (!confirm('Are you sure you want to emergency stop ALL boats?')) {
+                return;
+            }
+            
+            boats.forEach(boat => {
+                if (boat.status === 'online') {
+                    emergencyStop(boat.boat_id);
+                }
+            });
+        }
+        
+        function showError(message) {
+            const container = document.getElementById('error-container');
+            container.innerHTML = `<div class="error">❌ ${message}</div>`;
+        }
+        
+        function clearError() {
+            const container = document.getElementById('error-container');
+            container.innerHTML = '';
+        }
+    </script>
+</body>
+</html>

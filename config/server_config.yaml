@@ -12,13 +12,13 @@ database:
   max_overflow: 20
 
 mqtt:
-  broker_host: "mqtt.example.com"
-  broker_port: 8883
-  use_tls: true
+  broker_host: "localhost"
+  broker_port: 1883
+  use_tls: false
   keepalive: 60
   qos: 1
-  username: "${MQTT_USERNAME}"
-  password: "${MQTT_PASSWORD}"
+  username: "${MQTT_USERNAME:}"
+  password: "${MQTT_PASSWORD:}"
   
   topics:
     command_prefix: "boat/{boat_id}/commands"
@@ -33,7 +33,7 @@ logging:
   backup_count: 10
 
 security:
-  secret_key: "${SECRET_KEY}"
+  secret_key: "${SECRET_KEY:dev_secret_key_12345}"
   algorithm: "HS256"
   access_token_expire_minutes: 30
 

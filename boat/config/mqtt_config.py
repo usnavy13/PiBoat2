@@ -8,6 +8,12 @@ import os
 import logging
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, asdict
+from pathlib import Path
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
 
 try:
     import yaml
@@ -40,7 +46,23 @@ class ConfigManager:
     
     def __init__(self, config_file: Optional[str] = None):
         self.logger = logging.getLogger(__name__)
-        self.config_file = config_file or "/home/pi/PiBoat2/config/boat_config.yaml"
+        
+        # Load environment variables from .env file first
+        if load_dotenv:
+            # Look for .env file in boat directory first, then project root
+            boat_env = Path(__file__).parent.parent / '.env'
+            root_env = Path(__file__).parent.parent.parent / '.env'
+            
+            if boat_env.exists():
+                load_dotenv(boat_env)
+                self.logger.info(f"Loaded environment from: {boat_env}")
+            elif root_env.exists():
+                load_dotenv(root_env)
+                self.logger.info(f"Loaded environment from: {root_env}")
+        
+        # Set config file path - look in project config directory
+        project_root = Path(__file__).parent.parent.parent
+        self.config_file = config_file or str(project_root / "config" / "boat_config.yaml")
         self.config: Optional[BoatConfig] = None
         
         # Default configuration values

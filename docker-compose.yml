@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: piboat2-postgres
+    environment:
+      POSTGRES_DB: piboat2
+      POSTGRES_USER: piboat2
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-piboat2_dev_password}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - piboat2-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U piboat2 -d piboat2"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    container_name: piboat2-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - piboat2-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: redis-server --appendonly yes
+
+  # MQTT Broker (Eclipse Mosquitto)
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: piboat2-mosquitto
+    ports:
+      - "${MQTT_PORT:-1883}:1883"
+      - "${MQTT_WS_PORT:-9001}:9001"
+    volumes:
+      - ./docker/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_logs:/mosquitto/log
+    networks:
+      - piboat2-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_pub -h localhost -t test -m 'health check' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PiBoat2 Server Application (commented out for development)
+  # piboat2-server:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: piboat2-server
+  #   environment:
+  #     - DATABASE_URL=postgresql://piboat2:${DB_PASSWORD:-piboat2_dev_password}@postgres:5432/piboat2
+  #     - REDIS_URL=redis://redis:6379
+  #     - MQTT_BROKER_HOST=mosquitto
+  #     - MQTT_BROKER_PORT=1883
+  #   ports:
+  #     - "${SERVER_PORT:-8000}:8000"
+  #   volumes:
+  #     - ./logs:/app/logs
+  #   networks:
+  #     - piboat2-network
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     mosquitto:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+
+# Named volumes for data persistence
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  mosquitto_data:
+    driver: local
+  mosquitto_logs:
+    driver: local
+
+# Network for inter-service communication
+networks:
+  piboat2-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

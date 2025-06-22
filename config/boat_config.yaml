@@ -5,9 +5,9 @@ boat:
   name: "PiBoat2 Test Vessel"
   
 mqtt:
-  broker_host: "mqtt.example.com"
-  broker_port: 8883
-  use_tls: true
+  broker_host: "ec2-174-129-132-111.compute-1.amazonaws.com"
+  broker_port: 1883
+  use_tls: false
   keepalive: 60
   qos: 1
   username: "${MQTT_USERNAME}"
