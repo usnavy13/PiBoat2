@@ -207,22 +207,22 @@ class PiBoat2Application:
             gps_device = self.config.hardware['gps_device']
             gps_baudrate = self.config.hardware['gps_baudrate']
             
-            self.gps_handler = GPSHandler(device=gps_device, baudrate=gps_baudrate)
-            if not self.gps_handler.initialize():
-                self.logger.warning("GPS initialization failed - continuing without GPS")
+            self.gps_handler = GPSHandler(port=gps_device, baudrate=gps_baudrate)
+            try:
+                self.gps_handler.start()
+                self.logger.info("GPS handler initialized and started")
+            except Exception as e:
+                self.logger.warning(f"GPS initialization failed: {e} - continuing without GPS")
                 self.gps_handler = None
-            else:
-                self.logger.info("GPS handler initialized")
             
             # Initialize motor controller
-            motor_device = self.config.hardware['motor_controller_device']
-            
-            self.motor_controller = MotorController(device=motor_device)
-            if not self.motor_controller.initialize():
-                self.logger.error("Motor controller initialization failed")
-                return False
-            else:
+            self.motor_controller = MotorController()
+            try:
+                self.motor_controller.initialize()
                 self.logger.info("Motor controller initialized")
+            except Exception as e:
+                self.logger.error(f"Motor controller initialization failed: {e}")
+                return False
             
             return True
             

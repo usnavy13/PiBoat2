@@ -342,3 +342,17 @@ class MotorController:
     def get_max_rudder_angle(self):
         """Get the current maximum rudder angle limit"""
         return MAX_RUDDER_ANGLE 
+    
+    def get_status(self):
+        """Get motor controller status (alias for get_motor_status)"""
+        return self.get_motor_status()
+    
+    def emergency_stop(self):
+        """Emergency stop - immediately stop all motors"""
+        try:
+            self.stop()
+            logger.info("Emergency stop executed - all motors stopped")
+            return True
+        except Exception as e:
+            logger.error(f"Emergency stop failed: {e}")
+            return False

@@ -631,3 +631,17 @@ class GPSHandler:
                 accuracy['position_accuracy'] = accuracy['horizontal_accuracy']
             
             return accuracy 
+    
+    def get_position(self):
+        """
+        Get current GPS position data.
+        Returns dict with latitude, longitude, altitude, and fix status.
+        """
+        data = self.get_gps_data()
+        return {
+            'latitude': data['latitude'],
+            'longitude': data['longitude'], 
+            'altitude': data['altitude'],
+            'has_fix': data['has_fix'],
+            'timestamp': data['timestamp']
+        }

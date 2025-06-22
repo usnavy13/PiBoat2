@@ -1,7 +1,7 @@
 # PiBoat2 Boat Configuration
 
 boat:
-  id: "piboat2_001"
+  id: "piboat2_002"
   name: "PiBoat2 Test Vessel"
   
 mqtt:
@@ -14,19 +14,17 @@ mqtt:
   password: "${MQTT_PASSWORD}"
 
 hardware:
-  gps:
-    port: "/dev/ttyUSB0"
-    baud_rate: 9600
-    update_interval: 5
+  gps_device: "/dev/ttyACM0"
+  gps_baudrate: 9600
+  gps_update_interval: 5
   
-  compass:
-    i2c_address: 0x60
-    calibration_file: "config/compass_calibration.json"
+  compass_i2c_address: 0x60
+  compass_calibration_file: "config/compass_calibration.json"
   
-  motors:
-    left_motor_pin: 18
-    right_motor_pin: 19
-    max_speed_percent: 70
+  motor_controller_device: "/dev/ttyUSB1"
+  left_motor_pin: 18
+  right_motor_pin: 19
+  max_speed_percent: 70
 
 navigation:
   max_speed: 50
