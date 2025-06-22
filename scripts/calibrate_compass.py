@@ -5,7 +5,13 @@ Simple Compass Calibration Script for Marine Use
 
 import time
 import math
-from hardware_code.compass_handler import CompassHandler
+import sys
+from pathlib import Path
+
+# Add project root to path for imports
+sys.path.append(str(Path(__file__).parent.parent))
+
+from boat.hardware.compass_handler import CompassHandler
 
 def calibrate_compass_basic():
     """Perform basic compass calibration."""

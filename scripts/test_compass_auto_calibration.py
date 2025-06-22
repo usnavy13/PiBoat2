@@ -3,8 +3,14 @@
 Test script to demonstrate automatic calibration loading
 """
 
-from hardware_code.compass_handler import CompassHandler
+import sys
 import time
+from pathlib import Path
+
+# Add project root to path for imports
+sys.path.append(str(Path(__file__).parent.parent))
+
+from boat.hardware.compass_handler import CompassHandler
 
 def test_auto_calibration():
     print("🧭 TESTING AUTOMATIC CALIBRATION LOADING")

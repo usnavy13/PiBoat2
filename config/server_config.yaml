@@ -1,0 +1,42 @@
+# PiBoat2 Server Configuration
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+
+database:
+  url: "postgresql://piboat2:${DB_PASSWORD}@localhost/piboat2"
+  echo: false
+  pool_size: 10
+  max_overflow: 20
+
+mqtt:
+  broker_host: "mqtt.example.com"
+  broker_port: 8883
+  use_tls: true
+  keepalive: 60
+  qos: 1
+  username: "${MQTT_USERNAME}"
+  password: "${MQTT_PASSWORD}"
+  
+  topics:
+    command_prefix: "boat/{boat_id}/commands"
+    status_prefix: "boat/{boat_id}/status"
+    gps_prefix: "boat/{boat_id}/gps"
+    logs_prefix: "boat/{boat_id}/logs"
+
+logging:
+  level: "INFO"
+  file: "/var/log/piboat2-server.log"
+  max_size_mb: 50
+  backup_count: 10
+
+security:
+  secret_key: "${SECRET_KEY}"
+  algorithm: "HS256"
+  access_token_expire_minutes: 30
+
+monitoring:
+  health_check_interval: 60
+  boat_timeout_minutes: 5

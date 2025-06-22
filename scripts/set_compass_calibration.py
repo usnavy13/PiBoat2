@@ -4,7 +4,13 @@ Script to manually set compass calibration values
 Use this if you have calibration values from a previous calibration session
 """
 
-from hardware_code.compass_handler import CompassHandler
+import sys
+from pathlib import Path
+
+# Add project root to path for imports
+sys.path.append(str(Path(__file__).parent.parent))
+
+from boat.hardware.compass_handler import CompassHandler
 
 def set_manual_calibration():
     """Set calibration values manually."""

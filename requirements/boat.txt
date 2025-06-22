@@ -1,0 +1,6 @@
+-r common.txt
+pyserial
+pynmea2
+smbus2
+rpi-hardware-pwm
+paho-mqtt

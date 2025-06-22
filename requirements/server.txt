@@ -1,0 +1,6 @@
+-r common.txt
+fastapi
+uvicorn
+sqlalchemy
+paho-mqtt
+psycopg2-binary

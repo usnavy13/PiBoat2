@@ -8,7 +8,12 @@ import time
 import sys
 import signal
 import logging
-from hardware_code.motor_controller import MotorController
+from pathlib import Path
+
+# Add project root to path for imports
+sys.path.append(str(Path(__file__).parent.parent))
+
+from boat.hardware.motor_controller import MotorController
 
 # Configure logging
 logging.basicConfig(

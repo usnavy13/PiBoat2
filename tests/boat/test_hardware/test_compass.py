@@ -10,7 +10,12 @@ import signal
 import sys
 import logging
 import math
-from compass_handler import CompassHandler
+from pathlib import Path
+
+# Add project root to path for imports
+sys.path.append(str(Path(__file__).parent.parent.parent.parent))
+
+from boat.hardware.compass_handler import CompassHandler
 
 # Set up logging
 logging.basicConfig(

@@ -10,7 +10,12 @@ import signal
 import sys
 import logging
 import json
-from gps_handler import GPSHandler
+from pathlib import Path
+
+# Add project root to path for imports
+sys.path.append(str(Path(__file__).parent.parent.parent.parent))
+
+from boat.hardware.gps_handler import GPSHandler
 
 # Set up logging
 logging.basicConfig(

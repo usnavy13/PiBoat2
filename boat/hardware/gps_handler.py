@@ -5,7 +5,7 @@ import time
 import threading
 import decimal  # Add import for decimal module
 from datetime import datetime
-from agps_helper import AGPSHelper  # Import A-GPS helper
+from .agps_helper import AGPSHelper  # Import A-GPS helper
 
 logger = logging.getLogger("GPSHandler")
 

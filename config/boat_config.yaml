@@ -1,0 +1,52 @@
+# PiBoat2 Boat Configuration
+
+boat:
+  id: "piboat2_001"
+  name: "PiBoat2 Test Vessel"
+  
+mqtt:
+  broker_host: "mqtt.example.com"
+  broker_port: 8883
+  use_tls: true
+  keepalive: 60
+  qos: 1
+  username: "${MQTT_USERNAME}"
+  password: "${MQTT_PASSWORD}"
+
+hardware:
+  gps:
+    port: "/dev/ttyUSB0"
+    baud_rate: 9600
+    update_interval: 5
+  
+  compass:
+    i2c_address: 0x60
+    calibration_file: "config/compass_calibration.json"
+  
+  motors:
+    left_motor_pin: 18
+    right_motor_pin: 19
+    max_speed_percent: 70
+
+navigation:
+  max_speed: 50
+  arrival_radius: 10.0
+  max_rudder_angle: 45.0
+  
+safety:
+  command_timeout: 30
+  emergency_stop_timeout: 5
+  geofence_enabled: false
+  max_drift: 5.0
+
+logging:
+  level: "INFO"
+  file: "/var/log/piboat2.log"
+  max_size_mb: 10
+  backup_count: 5
+
+status_reporting:
+  interval: 10
+  include_gps: true
+  include_motors: true
+  include_system: true
